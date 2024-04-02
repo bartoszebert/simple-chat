@@ -33,7 +33,10 @@ function App() {
 
   return (
     <div className="App">
-      <header></header>
+      <header>
+        <h1>Simple Chat</h1>
+        <SignOut />
+      </header>
       <section>{user ? <ChatRoom /> : <SignIn />}</section>
     </div>
   );
@@ -82,8 +85,7 @@ const ChatRoom = () => {
 
   return (
     <>
-      <SignOut />
-      <div>
+      <div className="messages-wrapper">
         {messages &&
           messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
       </div>
