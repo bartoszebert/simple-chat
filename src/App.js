@@ -60,9 +60,10 @@ const SignOut = () => {
 const ChatRoom = () => {
   const messagesEndRef = useRef();
   const messagesRef = collection(db, "messages");
-  const q = query(messagesRef, orderBy("created_at"), limit(25));
+  const q = query(messagesRef, orderBy("created_at", "desc"), limit(25));
 
   const [messages] = useCollectionData(q, { idField: "id" });
+  const orderedMessages = messages?.slice().reverse();
   const [formValue, setFormValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -102,8 +103,8 @@ const ChatRoom = () => {
   return (
     <>
       <div className="messages-wrapper">
-        {messages &&
-          messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
+        {orderedMessages &&
+          orderedMessages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
         <div ref={messagesEndRef}></div>
       </div>
       <form onSubmit={sendMessage}>
