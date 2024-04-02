@@ -1,4 +1,5 @@
 import "./App.css";
+import { useState, useRef  } from "react";
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
@@ -12,7 +13,6 @@ import {
 import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollectionData } from "react-firebase-hooks/firestore";
-import { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 const firebaseConfig = {
@@ -58,16 +58,24 @@ const SignOut = () => {
 };
 
 const ChatRoom = () => {
+  const messagesEndRef = useRef();
   const messagesRef = collection(db, "messages");
   const q = query(messagesRef, orderBy("created_at"), limit(25));
 
   const [messages] = useCollectionData(q, { idField: "id" });
   const [formValue, setFormValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const sendMessage = async (e) => {
     e.preventDefault();
+    setIsLoading(true);
     const { uid, photoURL } = auth.currentUser;
-
+    
+    if (!formValue) {
+      setIsLoading(false);
+      return;
+    }
+    
     try {
       await addDoc(messagesRef, {
         id: uuidv4(),
@@ -76,11 +84,12 @@ const ChatRoom = () => {
         uid,
         photoURL,
       });
-
       setFormValue("");
+      messagesEndRef.current.scrollIntoView({ behavior: "smooth" }); 
     } catch (error) {
       console.error("Error sending message: ", error);
     }
+    setIsLoading(false);
   };
 
   return (
@@ -88,13 +97,16 @@ const ChatRoom = () => {
       <div className="messages-wrapper">
         {messages &&
           messages.map((msg) => <ChatMessage key={msg.id} message={msg} />)}
+        <div ref={messagesEndRef}></div>
       </div>
       <form onSubmit={sendMessage}>
         <input
           value={formValue}
           onChange={(e) => setFormValue(e.target.value)}
         />
-        <button type="submit">Send</button>
+        <button type="submit" disabled={isLoading}>
+          Send
+        </button>
       </form>
     </>
   );
