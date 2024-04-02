@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useRef  } from "react";
+import { useState, useRef, useEffect } from "react";
 import { initializeApp } from "firebase/app";
 import {
   getFirestore,
@@ -66,16 +66,19 @@ const ChatRoom = () => {
   const [formValue, setFormValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
+  const scrollToBottom = () =>
+    messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
+
   const sendMessage = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     const { uid, photoURL } = auth.currentUser;
-    
+
     if (!formValue) {
       setIsLoading(false);
       return;
     }
-    
+
     try {
       await addDoc(messagesRef, {
         id: uuidv4(),
@@ -85,12 +88,16 @@ const ChatRoom = () => {
         photoURL,
       });
       setFormValue("");
-      messagesEndRef.current.scrollIntoView({ behavior: "smooth" }); 
+      scrollToBottom();
     } catch (error) {
       console.error("Error sending message: ", error);
     }
     setIsLoading(false);
   };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   return (
     <>
